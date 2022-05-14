@@ -108,10 +108,11 @@ def read_input():
     
     file_name = sys.argv[1]
     with open(file_name) as f:
-        n = int(f.read(2))
+        num_lines = int(f.read(2))
         
         board = []
-        for i in range(n):
+        for i in range(num_lines):
+            # Leitura da linha i do tabuleiro de jogo
             board.append([])
             
             c = f.read(1)
