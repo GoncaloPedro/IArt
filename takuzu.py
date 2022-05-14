@@ -103,6 +103,25 @@ class Takuzu(Problem):
 
     # TODO: outros metodos da classe
 
+def read_input():
+    """Lê o input como especificado no enunciado"""
+    
+    file_name = sys.argv[1]
+    with open(file_name) as f:
+        n = int(f.read(2))
+        
+        board = []
+        for i in range(n):
+            board.append([])
+            
+            c = f.read(1)
+            while (c != '\n'):
+                if (c.isnumeric()):
+                    board[i].append(int(c))
+                
+                c = f.read(1)
+    
+    return board
 
 if __name__ == "__main__":
     # TODO:
