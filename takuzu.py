@@ -6,7 +6,9 @@
 # 00000 Nome1
 # 00000 Nome2
 
+from multiprocessing.sharedctypes import Value
 import sys
+from tkinter import N
 from search import (
     Problem,
     Node,
@@ -34,23 +36,106 @@ class TakuzuState:
 
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
+    
+    def __init__(self, size: int):
+        if (size <= 0):
+            raise ValueError
+        
+        self.side = size;
+        self.matrix = [[] for i in range(size)]
+    
+    
+    @staticmethod
+    def valid_value(value: int):
+        return value >= 0 and value <= 2
+
 
     def get_number(self, row: int, col: int) -> int:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+        try:
+            return self.matrix[row][col]
+        except LookupError:
+            raise LookupError
+    
+    
+    def get_row(self, row: int):
+        """Devolve uma linha do tabuleiro"""
+        try:
+            return self.matrix[row]
+        except LookupError:
+            raise LookupError
+        
 
     def adjacent_vertical_numbers(self, row: int, col: int) -> (int, int):
         """Devolve os valores imediatamente abaixo e acima,
         respectivamente."""
-        # TODO
-        pass
+        output = ()
+        
+        try:
+            output.append(self.get_number(row + 1, col))
+        except LookupError:
+            output.append(None)
+        try:
+            output.append(self.get_number(row - 1, col))
+        except LookupError:
+            output.append(None)
+        
+        """if ((row + 1) == self.side):
+            output.append(None)
+        else:
+            output.append(self.get_number(row + 1, col))
+        if ((row - 1) < 0):
+            output.append(None)
+        else:
+            output.append(self.get_number(row - 1, col))"""
+        
+        return output
+
 
     def adjacent_horizontal_numbers(self, row: int, col: int) -> (int, int):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
+        output = ()
+        
+        try:
+            output.append(self.get_number(row, col - 1))
+        except LookupError:
+            output.append(None)
+        try:
+            output.append(self.get_number(row, col + 1))
+        except LookupError:
+            output.append(None)
+        
+        """if ((col - 1) < 0):
+            output.append(None)
+        else:
+            output.append(self.get_number(row, col - 1))
+        if ((col + 1) == self.side):
+            output.append(None)
+        else:
+            output.append(self.get_number(row, col + 1))"""
+        
+        return output
+
+
+    def change_cell(self, row: int, col:int, value: int):
+        """Muda o valor numa dada célula do tabuleiro"""
+        if (not Board.valid_value()):
+            raise ValueError("Board.change_cell: O valor a inserir é inválido")
+        
+        try:
+            self.matrix[row][col] = value
+        except LookupError:
+            raise LookupError("Board.change_cell: Posição inválida")
+        
+        
+    def __append_to_row(self, row: int, value: int):
+        """Acrescenta uma coluna com o valor value na linha row"""
+        if (Board.valid_value(value)):
+            self.get_row(row).append(value)
+        else:
+            raise ValueError
+
 
     @staticmethod
     def parse_instance_from_stdin():
@@ -63,8 +148,41 @@ class Board:
             > from sys import stdin
             > stdin.readline()
         """
-        # TODO
-        pass
+        file_name = sys.argv[1]
+        with open(file_name) as f:
+            num_lines = int(f.read(2))
+            
+            board = Board(num_lines)
+            for i in range(num_lines):
+                # Leitura da linha i do tabuleiro de jogo
+                row = board.get_row()
+                
+                c = f.read(1)
+                while (c != '\n'):
+                    if (c.isnumeric()):
+                        #board[i].append(int(c))
+                        try:
+                            board.__append_to_row(i, int(c))
+                        except ValueError:
+                            raise ValueError("parse_instance_from_stdin: " +
+                                             "tabuleiro inválido")
+                    
+                    c = f.read(1)
+        
+        return board
+
+
+    def __str__(self):
+        out = ""
+        
+        for row in range(self.side):
+            for col in range(self.side):
+                out += self.get_number(row, col)
+                if col < (self.side - 1):
+                    out += '\t'
+            
+            out += '\n'
+        return out
 
     # TODO: outros metodos da classe
 
@@ -103,26 +221,6 @@ class Takuzu(Problem):
 
     # TODO: outros metodos da classe
 
-def read_input():
-    """Lê o input como especificado no enunciado"""
-    
-    file_name = sys.argv[1]
-    with open(file_name) as f:
-        num_lines = int(f.read(2))
-        
-        board = []
-        for i in range(num_lines):
-            # Leitura da linha i do tabuleiro de jogo
-            board.append([])
-            
-            c = f.read(1)
-            while (c != '\n'):
-                if (c.isnumeric()):
-                    board[i].append(int(c))
-                
-                c = f.read(1)
-    
-    return board
 
 if __name__ == "__main__":
     # TODO:
