@@ -132,7 +132,10 @@ class Board:
     def __append_to_row(self, row: int, value: int):
         """Acrescenta uma coluna com o valor value na linha row"""
         if (Board.valid_value(value)):
-            self.get_row(row).append(value)
+            try:
+                self.get_row(row).append(value)
+            except LookupError:
+                raise LookupError
         else:
             raise ValueError
 
