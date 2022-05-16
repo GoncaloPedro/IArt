@@ -1,3 +1,6 @@
+from mailbox import linesep
+
+
 # takuzu.py: Template para implementação do projeto de Inteligência Artificial 2021/2022.
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
@@ -7,6 +10,7 @@
 # 00000 Nome2
 
 from multiprocessing.sharedctypes import Value
+import numpy as np
 import sys
 from tkinter import N
 from search import (
@@ -37,12 +41,12 @@ class TakuzuState:
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
     
-    def __init__(self, size: int):
-        if (size <= 0):
+    def __init__(self, board:list, lines:int):
+        if (lines <= 0):
             raise ValueError
-        
-        self.side = size;
-        self.matrix = [[] for i in range(size)]
+
+        self.side = lines
+        self.matrix = np.array(board)
     
     
     @staticmethod
@@ -128,17 +132,6 @@ class Board:
         except LookupError:
             raise LookupError("Board.change_cell: Posição inválida")
         
-        
-    def __append_to_row(self, row: int, value: int):
-        """Acrescenta uma coluna com o valor value na linha row"""
-        if (Board.valid_value(value)):
-            try:
-                self.get_row(row).append(value)
-            except LookupError:
-                raise LookupError
-        else:
-            raise ValueError
-
 
     @staticmethod
     def parse_instance_from_stdin():
@@ -151,36 +144,27 @@ class Board:
             > from sys import stdin
             > stdin.readline()
         """
-        file_name = sys.argv[1]
-        with open(file_name) as f:
-            num_lines = int(f.read(2))
-            
-            board = Board(num_lines)
-            for i in range(num_lines):
-                # Leitura da linha i do tabuleiro de jogo
-                row = board.get_row()
-                
-                c = f.read(1)
-                while (c != '\n'):
-                    if (c.isnumeric()):
-                        #board[i].append(int(c))
-                        try:
-                            board.__append_to_row(i, int(c))
-                        except ValueError:
-                            raise ValueError("parse_instance_from_stdin: " +
-                                             "tabuleiro inválido")
-                    
-                    c = f.read(1)
-        
-        return board
+        input_file = sys.stdin.readlines()
+
+        board = []
+        for it, line in enumerate(input_file):
+            if (it > 0):
+                line = line.split('\t')
+                board.append([int(num) for num in line])
+            else:
+                num_lines = int(line[0])
+
+
+        return Board(board, num_lines)        
 
 
     def __str__(self):
+        # TODO ver se há forma mais eficaz de iterar numpy arrays
         out = ""
         
         for row in range(self.side):
             for col in range(self.side):
-                out += self.get_number(row, col)
+                out += str(self.get_number(row, col))
                 if col < (self.side - 1):
                     out += '\t'
             
@@ -228,6 +212,9 @@ class Takuzu(Problem):
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
+    game_board = Board.parse_instance_from_stdin()
+
+    print(game_board)
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
