@@ -76,22 +76,13 @@ class Board:
         output = ()
         
         try:
-            output.append(self.get_number(row + 1, col))
+            output += (self.get_number(row + 1, col),)
         except LookupError:
-            output.append(None)
+            output += (None,)
         try:
-            output.append(self.get_number(row - 1, col))
+            output += (self.get_number(row - 1, col),)
         except LookupError:
-            output.append(None)
-        
-        """if ((row + 1) == self.side):
-            output.append(None)
-        else:
-            output.append(self.get_number(row + 1, col))
-        if ((row - 1) < 0):
-            output.append(None)
-        else:
-            output.append(self.get_number(row - 1, col))"""
+            ouput += (None,)
         
         return output
 
@@ -102,22 +93,13 @@ class Board:
         output = ()
         
         try:
-            output.append(self.get_number(row, col - 1))
+            output += (self.get_number(row, col - 1),)
         except LookupError:
-            output.append(None)
+            output += (None,)
         try:
-            output.append(self.get_number(row, col + 1))
+            output += (self.get_number(row, col + 1),)
         except LookupError:
-            output.append(None)
-        
-        """if ((col - 1) < 0):
-            output.append(None)
-        else:
-            output.append(self.get_number(row, col - 1))
-        if ((col + 1) == self.side):
-            output.append(None)
-        else:
-            output.append(self.get_number(row, col + 1))"""
+            output += (None,)
         
         return output
 
@@ -177,6 +159,8 @@ class Board:
 class Takuzu(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
+        self.initial_state = board
+        
         # TODO
         pass
 
@@ -212,9 +196,10 @@ class Takuzu(Problem):
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
-    game_board = Board.parse_instance_from_stdin()
+    board = Board.parse_instance_from_stdin()
 
-    print(game_board)
+    print("Initial:\n", board, sep="")
+
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
