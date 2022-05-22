@@ -10,9 +10,10 @@ from mailbox import linesep
 # 00000 Nome2
 
 from multiprocessing.sharedctypes import Value
+from pickle import FALSE
 import numpy as np
 import sys
-from tkinter import N
+"""from tkinter import N"""
 from search import (
     Problem,
     Node,
@@ -68,7 +69,7 @@ class Board:
             return self.matrix[row]
         except LookupError:
             raise LookupError
-        
+    
 
     def adjacent_vertical_numbers(self, row: int, col: int) -> (int, int):
         """Devolve os valores imediatamente abaixo e acima,
@@ -189,9 +190,35 @@ class Takuzu(Problem):
         """Função heuristica utilizada para a procura A*."""
         # TODO
         pass
+    
+    def equal_zeros_ones(board: Board, sum):
+        """Funcao auxiliar permite verificar a condicao, da existencia de um
+        número igual de 1s e 0s em cada linha e coluna (ou mais um para grelhas
+        de dimensão ímpar, do estado objetivo"""
+        even = board.side % 2
+        if (even):
+            return sum == board.side
+        else:
+            return sum == (board.side + 1) or sum == (board.side - 1)
 
-    # TODO: outros metodos da classe
+    def valid_rows(board: Board):
+        """Funcao que verifica a condicao de igualdade de 1 ou 0 nas linhas da grelha"""
+        for i in range(Board.side):
+            if (not equal_zeros_ones(board, numpy.sum(board.get_row(i)) != (board.side / 2))):
+                return False
 
+
+    def valid_columns(board: Board):
+        """Funcao que verifica a condicao de igualdade de 1 ou 0 nas colunas da grelha"""
+        for col in range(board.side):
+            sum = 0
+            for row in range(board.side):
+                sum += board.get_value(row, col)
+            if (not equal_zeros_ones(board, sum)):
+                return False
+
+
+    
 
 if __name__ == "__main__":
     # TODO:
