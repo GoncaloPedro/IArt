@@ -217,6 +217,33 @@ class Takuzu(Problem):
             if (not equal_zeros_ones(board, sum)):
                 return False
 
+    def check_row(row,size_row,last_value, limit, index):
+        if (limit == 0 or index == size_row):
+            return False
+        elif (row[index] == last_value):
+            return check_row(row,size_row,last_value, limit - 1, index + 1)
+        else:
+            return check_row(row,size_row,row[index], 2, index + 1)
+
+
+    def check_adjacencies(board:Board):
+        for i in range(board.side):
+            row = board.get_row(i)
+            size = board.side
+            if (check_row(row,size, row[0], 2, 0) == False):
+                return False
+            if (check_column(board, board[0][i], 2, i, 0) == False):
+                return False
+        return True
+
+    def check_column(board: Board, last_value, limit, col, row):
+        if (limit == 0 or row == board.side):
+            return False
+        elif (board[row][col] == last_value):
+            return check_column(board, last_value, limit - 1, col, row + 1)
+        else:
+            return check_column(board, board[row][col], 2, col, row + 1)
+
 
     
 
