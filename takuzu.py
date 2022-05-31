@@ -211,6 +211,8 @@ class Takuzu(Problem):
             for col in range(side):
                 if (state.board.is_empty_cell(row, col)):
                     option = self.pick_conditioned_by_adjacencies(row, col, state.board)
+                    if (option == -2):
+                        continue
                     #print("Pelas adjacências temos ", option)
                     if (option == -1):
                         option = self.pick_conditioned_by_number_of_occurences(row, col, state.board)
@@ -276,9 +278,9 @@ class Takuzu(Problem):
                 return False
                 
         # TODO podemos optimizar ao meter o código do check_adjacencies no for ali em cima
-        # TODO optimizar o check equal lines para só ser chamado 1 vez
         
-        return (self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS) and self.check_equal_lines(board, CHECK_ROWS))
+        #return (self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS) and self.check_equal_lines(board, CHECK_ROWS))
+        return self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS)
             
 
     def h(self, node: Node):
@@ -317,10 +319,7 @@ class Takuzu(Problem):
         
         if ((horizontal_move != vertical_move) and (horizontal_move != -1) and (vertical_move != -1)):
             # Há inconsistências e o tabuleiro já é inválido
-            # TODO
-            # TODO implementar este caso 
-            # TODO
-            pass
+            return -2
         elif (horizontal_move != -1):
             return horizontal_move
         elif (vertical_move != -1):
@@ -546,21 +545,26 @@ class Takuzu(Problem):
         
         for row_1 in range(board.side):
             for row_2 in range(board.side):
-                num_equalities = 0
+                col_equalities = 0
+                row_equalities = 0
                 
                 if (row_1 == row_2):
                     continue
                 
                 for i in range(board.side):
-                    if ((base_transpose == CHECK_ROWS) and 
-                        (board.get_number(row_1, i) == board.get_number(row_2, i))):
-                        num_equalities += 1
+                    if (board.get_number(row_1, 1) == board.get_number(row_2, i)):
+                        row_equalities += 1
+                    if (board.get_number(i, row_1) == board.get_number(i, row_2)):
+                        col_equalities += 1
+                    #if ((base_transpose == CHECK_ROWS) and 
+                    #    (board.get_number(row_1, i) == board.get_number(row_2, i))):
+                    #    num_equalities += 1
                         
-                    elif ((base_transpose == CHECK_COLUMNS) and 
-                        (board.get_number(i, row_1) == board.get_number(i, row_2))):
-                        num_equalities += 1
+                    #elif ((base_transpose == CHECK_COLUMNS) and 
+                    #    (board.get_number(i, row_1) == board.get_number(i, row_2))):
+                    #    num_equalities += 1
                         
-                    if (num_equalities == board.side):
+                    if (row_equalities == board.side or col_equalities == board.side):
                         return False
         
         return True
