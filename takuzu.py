@@ -211,8 +211,10 @@ class Takuzu(Problem):
             for col in range(side):
                 if (state.board.is_empty_cell(row, col)):
                     option = self.pick_conditioned_by_adjacencies(row, col, state.board)
+                    #print("Pelas adjacências temos ", option)
                     if (option == -1):
                         option = self.pick_conditioned_by_number_of_occurences(row, col, state.board)
+                        #print("Pelas ocorrências temos ", option)
                         if (option == -1):
                             actions += [(row, col, 0), (row, col, 1)]
                             continue
@@ -231,9 +233,9 @@ class Takuzu(Problem):
         board = state.board
         new_board = board.deep_copy()
         
-        if (action[0] == 3 and action[1] == 1 and action[2] == 1):
-            print(action)
-            print(new_board)
+        #if (action[0] == 3 and action[1] == 1 and action[2] == 1):
+        #    print(action)
+        #    print(new_board)
             
         #print(id(board))
         #print(id(new_board))
@@ -274,8 +276,9 @@ class Takuzu(Problem):
                 return False
                 
         # TODO podemos optimizar ao meter o código do check_adjacencies no for ali em cima
+        # TODO optimizar o check equal lines para só ser chamado 1 vez
         
-        return (self.check_adjacencies(board) and self.check_equal_lines(board))
+        return (self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS) and self.check_equal_lines(board, CHECK_ROWS))
             
 
     def h(self, node: Node):
@@ -309,31 +312,59 @@ class Takuzu(Problem):
             return -1
             
         
-        #if (board.is_edge_cell(row, col) or row in (1, board.side - 2) or 
-        #    col in (1, board.side - 2)):
-            #if (row == 0 and col == 1):
-                #print("awooga")
-        #    return self.adjacencies_edge_cell(row, col, vertical, horiz, board)
-            
-            
-        #if (vertical[0] == vertical[1]):
-        #    return Takuzu.get_complementary_value(vertical[0])
+        horizontal_move = self.horizontal_adjacencies(row, col, horiz, board)
+        vertical_move = self.vertical_adjacencies(row, col, vertical, board)
         
-        #if (horiz[0] == horiz[1]):
-        #    return Takuzu.get_complementary_value(horiz[0])
-        
-        if (not board.is_edge_cell(row, col)):
-            if (vertical[0] == vertical[1]):
-                return Takuzu.get_complementary_value(vertical[0])
-        
-            if (horiz[0] == horiz[1]):
-                return Takuzu.get_complementary_value(horiz[0])
-        else:
-            return self.adjacencies_edge_cell(row, col, vertical, horiz, board)
-            
-        
+        if ((horizontal_move != vertical_move) and (horizontal_move != -1) and (vertical_move != -1)):
+            # Há inconsistências e o tabuleiro já é inválido
+            # TODO
+            # TODO implementar este caso 
+            # TODO
+            pass
+        elif (horizontal_move != -1):
+            return horizontal_move
+        elif (vertical_move != -1):
+            return vertical_move
         
         return -1
+    
+    
+    def horizontal_adjacencies(self, row: int, col: int, horiz, board: Board):
+        # TODO 
+        # TODO Ver se dá para cortar ramos
+        # TODO
+        if (horiz[0] == horiz[1]):
+            return Takuzu.get_complementary_value(horiz[0])
+        
+        elif (not (col in (board.side - 2, board.side - 1)) and 
+              (horiz[1] == board.get_number(row, col + 2))):
+            
+            return Takuzu.get_complementary_value(horiz[1])
+        
+        elif (not (col in (0, 1)) and
+              (horiz[0] == board.get_number(row, col - 2))):
+            
+            return Takuzu.get_complementary_value(horiz[0])
+        
+        return -1
+
+
+    def vertical_adjacencies(self, row: int, col: int, vert, board: Board):
+        # TODO
+        # TODO Ver se dá para cortar ramos
+        # TODO
+        if (vert[0] == vert[1]):
+            return Takuzu.get_complementary_value(vert[0])
+        
+        elif (not (row in (0,1)) and (vert[0] == board.get_number(row - 2, col))):
+            return Takuzu.get_complementary_value(vert[0])
+        
+        elif (not (row in (board.side - 2, board.side - 1)) and 
+              (vert[1] == board.get_number(row + 2, col))):
+            return Takuzu.get_complementary_value(vert[1])
+        
+        return -1
+        
     
         
     def adjacencies_edge_cell(self, row: int, col: int, vert_adj: list,
@@ -344,11 +375,11 @@ class Takuzu(Problem):
                 return move
             #return self.edge_cell_vertical_adjacencies(row, col, vert_adj, board)
         if (None in horiz_adj or col in (1, board.side - 2)):
-            if (row == 0 and col == 1 and board.matrix[0][0] == 0):
-                print(board)
-                print(self.edge_cell_horizontal_adjacencies(row, col, horiz_adj, board))
-                print((row, col))
-                exit()
+            #if (row == 0 and col == 1 and board.matrix[0][0] == 0):
+                #print(board)
+                #print(self.edge_cell_horizontal_adjacencies(row, col, horiz_adj, board))
+                #print((row, col))
+                #exit()
             return self.edge_cell_horizontal_adjacencies(row, col, horiz_adj, board)
 
 
@@ -416,15 +447,16 @@ class Takuzu(Problem):
         uneven = board_size % 2
         
         if (uneven):
-            return num_occurences == (board_size % 2)
+            return num_occurences == int(board_size / 2 + 1)
         else:
-            return (num_occurences == (board_size % 2 + 1) or 
-                    num_occurences == (board_size % 2 - 1))
+            return num_occurences == int(board_size / 2)
     
     
     def pick_conditioned_by_number_of_occurences(self, row: int, col: int, board: Board):
         # TODO
         # TODO abstrair os ifs para outra função
+        # TODO
+        # TODO Tentar cortar ramos desnecessários ou comparar o resultado das colunas vs linhas
         # TODO
         
         num_0 = 0
@@ -432,7 +464,7 @@ class Takuzu(Problem):
         for num in board.get_row(row):
             if (num == 0):
                 num_0 += 1
-            else:
+            elif (num == 1):
                 num_1 += 1
         
         if (num_0 > num_1 and self.check_num_occurences(board.side, num_0)):
@@ -445,7 +477,7 @@ class Takuzu(Problem):
         for row_n in range(board.side):
             if (board.get_number(row_n, col) == 0):
                 num_0  += 1
-            else:
+            elif (board.get_number(row, col) == 1):
                 num_1 += 1
                 
         if (num_0 > num_1 and self.check_num_occurences(board.side, num_0)):
@@ -521,7 +553,7 @@ class Takuzu(Problem):
                 
                 for i in range(board.side):
                     if ((base_transpose == CHECK_ROWS) and 
-                        (board.get_number(row_1, i) == board.get_number([row_2][i]))):
+                        (board.get_number(row_1, i) == board.get_number(row_2, i))):
                         num_equalities += 1
                         
                     elif ((base_transpose == CHECK_COLUMNS) and 
@@ -545,13 +577,13 @@ if __name__ == "__main__":
     #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,1,0]],4)
     #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,0,0]],4)
     #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,1,1]], 4)
-    #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,0,1]], 4)
+    #board = Board([[0,1,0,1],[1,0,0,1],[0,1,1,0],[1,0,2,0]], 4)
     #s = TakuzuState(board)
     #problem = Takuzu(s)
     #print(board)
     
     #print(problem.actions(s))
-    
+    #exit()
     
     
     board = Board.parse_instance_from_stdin()
