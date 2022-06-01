@@ -259,6 +259,10 @@ class Takuzu(Problem):
         #print(id(board))
         #print(id(new_board))
         #print(action)
+        #if (action[2] == -2):
+        #    print("-2 -2 -2 -2 -2 ")
+        #elif (action[2] == -1):
+        #    print("-1 -1 -1 -1 -1 ")
         new_board.change_cell(action[0], action[1], action[2])
         new_board.x += 1
         
@@ -280,19 +284,23 @@ class Takuzu(Problem):
         board = state.board
         
         for i in range(board.side):
-            if (not self.check_num_occurences(board.side, sum(board.get_row(i)))):
-                return False
+            #if (not self.check_num_occurences(board.side, sum(board.get_row(i)))):
+            #    return False
         
             num_0 = 0
             num_1 = 0
             for j in range(board.side):
+                if (board.get_number(j, i) == 2):
+                    return False
                 if (board.get_number(j, i) == 1):
                     num_1 += 1
                 if (board.get_number(j, i) == 0):
-                    num_1 += 0
-            
-            if (not self.check_num_occurences(board.side, num_0 + num_1)):
-                return False
+                    num_0 += 1
+                    
+            if (num_0 >= num_1):
+                return self.check_num_occurences(board.side, num_0)
+            else:
+                return self.check_num_occurences(board.side, num_1)
                 
         # TODO podemos optimizar ao meter o código do check_adjacencies no for ali em cima
         
