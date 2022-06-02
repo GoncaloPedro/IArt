@@ -57,10 +57,7 @@ class Board:
 
     def get_number(self, row: int, col: int) -> int:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        try:
-            return self.matrix[row][col]
-        except LookupError:
-            raise LookupError
+        return self.matrix[row][col]
         
         
     def is_empty_cell(self, row: int, col: int) -> bool:
@@ -76,10 +73,7 @@ class Board:
     
     def get_row(self, row: int):
         """Devolve uma linha do tabuleiro"""
-        try:
-            return self.matrix[row]
-        except LookupError:
-            raise LookupError
+        return self.matrix[row]
         
 
     def adjacent_vertical_numbers(self, row: int, col: int) -> (int, int):
@@ -87,14 +81,14 @@ class Board:
         respectivamente."""
         output = ()
         
-        try:
+        if (row != 0):
             output += (self.get_number(row - 1, col),)
-        except LookupError:
+        else:
             output += (None,)
-        try:
+        if (row == (self.side - 1)):
+            output += (None,)
+        else:
             output += (self.get_number(row + 1, col),)
-        except LookupError:
-            output += (None,)
         
         return output
 
@@ -104,27 +98,24 @@ class Board:
         respectivamente."""
         output = ()
         
-        try:
+        if (col == 0):
+            output += (None,)
+        else:
             output += (self.get_number(row, col - 1),)
-        except LookupError:
+        if (col == (self.side - 1)):
             output += (None,)
-        try:
+        else:
             output += (self.get_number(row, col + 1),)
-        except LookupError:
-            output += (None,)
         
         return output
 
 
     def change_cell(self, row: int, col:int, value: int):
         """Muda o valor numa dada célula do tabuleiro"""
-        if (not Board.valid_value(value)):
-            raise ValueError("Board.change_cell: O valor a inserir é inválido")
+        #if (not Board.valid_value(value)):
+        #    raise ValueError("Board.change_cell: O valor a inserir é inválido")
         
-        try:
-            self.matrix[row][col] = value
-        except LookupError:
-            raise LookupError("Board.change_cell: Posição inválida")
+        self.matrix[row][col] = value
         
 
     @staticmethod
