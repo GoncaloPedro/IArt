@@ -168,7 +168,6 @@ class Board:
 
 
     def __str__(self):
-        # TODO ver se há forma mais eficaz de iterar numpy arrays
         out = ""
         
         for row in range(self.side):
@@ -196,30 +195,24 @@ class Takuzu(Problem):
     def actions(self, state: TakuzuState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        #print("Entrar na actions")
         
         
         side = state.board.side
         actions = []
         action_picked = False
-        #for row in range(side):
         row = 0
         while (row < side and not action_picked):
             for col in range(side):
                 if (state.board.is_empty_cell(row, col)):
                     option = self.pick_conditioned_by_adjacencies(row, col, state.board)
                     if (option == -2):
-                        # TODO implement
+                        # TODO remove
                         continue
                     if (option == -1):
                         option = self.pick_conditioned_by_number_of_occurences(row, col, state.board)
-                        #if (option == -1):
-                        #    actions += [(row, col, 0), (row, col, 1)]
-                        #    action_picked = True
-                        #    break
+
 
                     if (option != -1):
-                        # option == -1 tanto podes jogar 0 como podes 1. Se options != -1, tens uma jogada obrigatória
                         actions += [(row, col, option)]
                         action_picked = True
                         break
@@ -234,7 +227,6 @@ class Takuzu(Problem):
                     break
             row = row + 1
         
-        #print(actions)
         
         return actions
 
@@ -246,32 +238,9 @@ class Takuzu(Problem):
         board = state.board
         new_board = board.deep_copy()
         
-        #if (action[0] == 0 and action[1] == 0 and action[2] == 1):
-            #print(action)
-            #print(new_board)
-            
-        #print(id(board))
-        #print(id(new_board))
-        #print(action)
-        #if (action[2] == -2):
-        #    print("-2 -2 -2 -2 -2 ")
-        #elif (action[2] == -1):
-        #    print("-1 -1 -1 -1 -1 ")
         new_board.change_cell(action[0], action[1], action[2])
         new_board.x += 1
-        
-        #print("-----------")
-        #print(board)
-        #print("########")
-        #print(new_board)
-        #if (new_board.x == 7):
-        #    print(new_board)
-        #print(board)
-        #print(new_board)
-        
-        #print(id(board))
 
-        
         return TakuzuState(new_board)
 
     def goal_test(self, state: TakuzuState):
@@ -281,8 +250,6 @@ class Takuzu(Problem):
         board = state.board
         num_occ = True
         for i in range(board.side):
-            #if (not self.check_num_occurences(board.side, sum(board.get_row(i)))):
-            #    return False
         
             num_0 = 0
             num_1 = 0
@@ -303,7 +270,6 @@ class Takuzu(Problem):
                 
         # TODO podemos optimizar ao meter o código do check_adjacencies no for ali em cima
         
-        #return (self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS) and self.check_equal_lines(board, CHECK_ROWS))
         return self.check_adjacencies(board) and self.check_equal_lines(board)
             
 
@@ -476,8 +442,6 @@ class Takuzu(Problem):
     
     def check_adjacencies(self, board: Board):
         
-        # TODO ver se aquele 1º if não está mal
-        
         for i in range(board.side):
             row = board.get_row(i)
             size = board.side
@@ -555,27 +519,12 @@ class Takuzu(Problem):
 
 
 if __name__ == "__main__":
-    # TODO:
-    # Ler o ficheiro do standard input,
-    
-    #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,1,0]],4)
-    #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,0,0]],4)
-    #board = Board([[0,1,0,1],[1,0,0,1],[0,0,1,0],[1,2,1,1]], 4)
-    #board = Board([[0,1,0,1],[1,0,0,1],[0,1,1,0],[1,0,2,0]], 4)
-    #s = TakuzuState(board)
-    #problem = Takuzu(s)
-    #print(board)
-    
-    #print(problem.actions(s))
-    #exit()
-    
-    
+
     board = Board.parse_instance_from_stdin()
     #print("Initial:")
     #print(board)
     problem = Takuzu(board)
 
-    #print("Vai começar dfs")
     solution_node = depth_first_tree_search(problem)
     if (solution_node != None):
         solution_state = solution_node.state
