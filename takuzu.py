@@ -1,19 +1,13 @@
-from mailbox import linesep
-
-
 # takuzu.py: Template para implementação do projeto de Inteligência Artificial 2021/2022.
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
 # Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# 99229 Gonçalo Nunes
+# 99297 Pedro Cruz
 
-from multiprocessing.sharedctypes import Value
-from termios import TIOCPKT_DOSTOP
 import numpy as np
 import sys
-from tkinter import N
 from search import (
     Problem,
     Node,
@@ -24,9 +18,6 @@ from search import (
     recursive_best_first_search,
 )
 
-
-CHECK_ROWS = -1
-CHECK_COLUMNS = -2
 
 class TakuzuState:
     state_id = 0
@@ -186,7 +177,8 @@ class Board:
                 if col < (self.side - 1):
                     out += '\t'
             
-            out += '\n'
+            if (row != (self.side - 1)):
+                out += '\n'
         return out
 
     # TODO: outros metodos da classe
@@ -204,6 +196,8 @@ class Takuzu(Problem):
     def actions(self, state: TakuzuState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
+        #print("Entrar na actions")
+        
         
         side = state.board.side
         actions = []
@@ -266,9 +260,12 @@ class Takuzu(Problem):
         new_board.change_cell(action[0], action[1], action[2])
         new_board.x += 1
         
-        
+        #print("-----------")
+        #print(board)
+        #print("########")
+        #print(new_board)
         #if (new_board.x == 7):
-            #print(new_board)
+        #    print(new_board)
         #print(board)
         #print(new_board)
         
@@ -282,7 +279,7 @@ class Takuzu(Problem):
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas com uma sequência de números adjacentes."""
         board = state.board
-        
+        num_occ = True
         for i in range(board.side):
             #if (not self.check_num_occurences(board.side, sum(board.get_row(i)))):
             #    return False
@@ -298,14 +295,16 @@ class Takuzu(Problem):
                     num_0 += 1
                     
             if (num_0 >= num_1):
-                return self.check_num_occurences(board.side, num_0)
+                num_occ = self.check_num_occurences(board.side, num_0)
             else:
-                return self.check_num_occurences(board.side, num_1)
+                num_occ = self.check_num_occurences(board.side, num_1)
+            if (not num_occ):
+                return False
                 
         # TODO podemos optimizar ao meter o código do check_adjacencies no for ali em cima
         
         #return (self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS) and self.check_equal_lines(board, CHECK_ROWS))
-        return self.check_adjacencies(board) and self.check_equal_lines(board, CHECK_COLUMNS)
+        return self.check_adjacencies(board) and self.check_equal_lines(board)
             
 
     def h(self, node: Node):
@@ -528,7 +527,7 @@ class Takuzu(Problem):
             return self.check_column(board, board.get_number(row, col), 2, col, row + 1)
         
     
-    def check_equal_lines(self, board: Board, base_transpose: int):
+    def check_equal_lines(self, board: Board):
         size = board.side
         
         for row_1 in range(board.side):
@@ -572,18 +571,13 @@ if __name__ == "__main__":
     
     
     board = Board.parse_instance_from_stdin()
+    #print("Initial:")
+    #print(board)
     problem = Takuzu(board)
 
-    print("Initial:\n", board, sep="")
-    
+    #print("Vai começar dfs")
     solution_node = depth_first_tree_search(problem)
-    #print(solution_node)
-    solution_state = solution_node.state
-    final_board = solution_state.board
-    print("Final:\n", final_board, sep="")
-    pass
-
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar a solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.
-    #pass
+    if (solution_node != None):
+        solution_state = solution_node.state
+        final_board = solution_state.board
+        print(final_board)
