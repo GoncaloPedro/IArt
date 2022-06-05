@@ -196,27 +196,31 @@ class Takuzu(Problem):
             for col in range(side):
                 if (state.board.is_empty_cell(row, col)):
                     option = self.pick_conditioned_by_adjacencies(row, col, state.board)
-                    if (option == -2):
-                        # TODO remove
-                        continue
                     if (option == -1):
                         option = self.pick_conditioned_by_number_of_occurences(row, col, state.board)
 
 
                     if (option != -1):
-                        actions += [(row, col, option)]
+                        actions = [(row, col, option)]
                         action_picked = True
                         break
+                    elif (option == -1):
+                        actions = [(row, col, 0), (row, col, 1)]
+                        
             row = row + 1
-            
-        row = 0
-        while (row < side and not action_picked):
-            for col in range(side):
-                if (state.board.is_empty_cell(row, col)):
-                    actions += [(row, col, 0), (row, col, 1)]
-                    action_picked = True
-                    break
-            row = row + 1
+        
+        #if (len(actions) > 2):
+        #    print(actions)
+        #    print('aaaaaa')
+        #    exit(0)        
+        #row = 0
+        #while (row < side and not action_picked):
+        #    for col in range(side):
+        #        if (state.board.is_empty_cell(row, col)):
+        #            actions += [(row, col, 0), (row, col, 1)]
+        #            action_picked = True
+        #            break
+        #    row = row + 1
         
         
         return actions
@@ -257,11 +261,17 @@ class Takuzu(Problem):
             else:
                 num_occ = self.check_num_occurences(board.side, num_1)
             if (not num_occ):
+                return False            
+            row = board.get_row(i)
+            size = board.side
+            #if (not self.check_row(row,size, row[0], 2, 0)):
+            if (not self.check_row(board.side, row)):
+                return False
+            if (not self.check_column(board, i, board.side)):
+            #if (not self.check_column(board, board.get_number(0, i), 2, i, 0)):
                 return False
                 
-        # TODO podemos optimizar ao meter o código do check_adjacencies no for ali em cima
-        
-        return self.check_adjacencies(board) and self.check_equal_lines(board)
+        return self.check_equal_lines(board)
             
 
     def h(self, node: Node):
@@ -297,10 +307,7 @@ class Takuzu(Problem):
         horizontal_move = self.horizontal_adjacencies(row, col, horiz, board)
         vertical_move = self.vertical_adjacencies(row, col, vertical, board)
         
-        if ((horizontal_move != vertical_move) and (horizontal_move != -1) and (vertical_move != -1)):
-            # Há inconsistências e o tabuleiro já é inválido
-            return -2
-        elif (horizontal_move != -1):
+        if (horizontal_move != -1):
             return horizontal_move
         elif (vertical_move != -1):
             return vertical_move
@@ -431,55 +438,85 @@ class Takuzu(Problem):
         return -1
         
     
-    def check_adjacencies(self, board: Board):
-        
-        for i in range(board.side):
-            row = board.get_row(i)
-            size = board.side
-            if (not self.check_row(row,size, row[0], 2, 0)):
-                return False
-            if (not self.check_column(board, board.get_number(0, i), 2, i, 0)):
-                return False
-            
-        return True
+#    def check_row(self, row, size_row: int, last_value: int, limit: int,
+#                  index: int):
+#        
+#        if (index == size_row):
+#            return True
+#       elif (limit == 0): #and row[index] == last_value):
+#           if (row[index] == last_value):
+#                return False
+#            else:
+#                return self.check_row(row,size_row,row[index], 1, index + 1)
+#                #return self.check_row(row,size_row,row[index], 2, index + 1)
+#        elif (index == 0):
+#            return self.check_row(row, size_row, row[index], limit - 1, index + 1)
+#        elif (row[index] == last_value):
+#            return self.check_row(row,size_row,last_value, limit - 1, index + 1)
+#        else:
+#            #return self.check_row(row,size_row,row[index], 1, index + 1)
+#            return self.check_row(row,size_row,row[index], 2, index + 1)
     
-
-    def check_row(self, row, size_row: int, last_value: int, limit: int,
-                  index: int):
-        
-        if (index == size_row):
-            return True
-        elif (limit == 0 and row[index] == last_value):
-            if (row[index] == last_value):
-                return False
+    def check_row(self, size: int, row):
+        limit = 0
+        last_value = -1
+        for i in range(size):
+            #print("Estamos na iteração ", i)
+            #print("O valor é", row[i])
+            if (row[i] == last_value):
+                #print("O limite vai ser incrementado e era ", limit)
+                limit += 1
             else:
-                return self.check_row(row,size_row,row[index], 2, index + 1)
-        elif (index == 0):
-            return self.check_row(row, size_row, row[index], limit - 1, index + 1)
-        elif (row[index] == last_value):
-            return self.check_row(row,size_row,last_value, limit - 1, index + 1)
-        else:
-            return self.check_row(row,size_row,row[index], 2, index + 1)
-
-
-    def check_column(self, board: Board, last_value: int, limit: int, col: int,
-                    row: int):
-        
-        # TODO juntar os 2 elses num só
-        
-        if (row == board.side):
-            return True
-        elif (limit == 0 and board.get_number(row, col) == last_value):
-            if (board.get_number(row, col) == last_value):
+                #print("O limite vai passar a 1 e era ", limit)
+                limit = 1
+                
+            if (limit == 3):
                 return False
+            last_value = row[i]
+            #print("")
+        #print(limit)
+    
+        return limit != 3
+
+    def check_column(self, board: Board, col: int, size: int):
+        limit = 0
+        last_value = -1
+        for i in range(size):
+            if (board.get_number(i, col) == last_value):
+                limit += 1
             else:
-                return self.check_column(board, board.get_number(row, col), 2, col, row + 1)
-        elif (row == 0):
-            return self.check_column(board, board.get_number(row, col), limit - 1, col, row + 1)
-        elif (board.get_number(row, col) == last_value):
-            return self.check_column(board, last_value, limit - 1, col, row + 1)
-        else:
-            return self.check_column(board, board.get_number(row, col), 2, col, row + 1)
+                limit = 1
+            
+            if (limit == 3):
+                return False
+            last_value = board.get_number(i, col)
+    
+        return limit != 3
+            
+            
+        
+
+
+#    def check_column(self, board: Board, last_value: int, limit: int, col: int,
+#                    row: int):
+#        
+#        # TODO juntar os 2 elses num só
+#        
+#        if (row == board.side):
+#            return True
+#        elif (limit == 0): #and board.get_number(row, col) == last_value):
+#            if (board.get_number(row, col) == last_value):
+#                return False
+#            else:
+#                return self.check_column(board, board.get_number(row, col), 1, col, row + 1)
+#                #return self.check_column(board, board.get_number(row, col), 2, col, row + 1)
+#        elif (row == 0):
+#            return self.check_column(board, board.get_number(row, col), limit - 1, col, row + 1)
+#        elif (board.get_number(row, col) == last_value):
+#            return self.check_column(board, last_value, limit - 1, col, row + 1)
+#        else:
+#            #return self.check_column(board, board.get_number(row, col), 1, col, row + 1)
+#            return self.check_column(board, board.get_number(row, col), 2, col, row + 1)
         
     
     def check_equal_lines(self, board: Board):
@@ -494,7 +531,7 @@ class Takuzu(Problem):
                     continue
                 
                 for i in range(board.side):
-                    if (board.get_number(row_1, 1) == board.get_number(row_2, i)):
+                    if (board.get_number(row_1, i) == board.get_number(row_2, i)):
                         row_equalities += 1
                     if (board.get_number(i, row_1) == board.get_number(i, row_2)):
                         col_equalities += 1
@@ -510,11 +547,18 @@ class Takuzu(Problem):
 
 
 if __name__ == "__main__":
+    
+    
 
     board = Board.parse_instance_from_stdin()
     #print("Initial:")
     #print(board)
     problem = Takuzu(board)
+    
+    #print(problem.check_row(8, [1,1,0,0,0,1,1,0]))
+    #print(problem.check_column([[1],[1],[0],[0],[0],[1],[1],[0]],0, 8))
+    #exit(0)
+    
 
     solution_node = depth_first_tree_search(problem)
     if (solution_node != None):
