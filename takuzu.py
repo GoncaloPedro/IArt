@@ -404,36 +404,58 @@ class Takuzu(Problem):
     
     def pick_conditioned_by_number_of_occurences(self, row: int, col: int, board: Board):
         # TODO
-        # TODO abstrair os ifs para outra função
         # TODO
-        # TODO Tentar cortar ramos desnecessários ou comparar o resultado das colunas vs linhas
+        # TODO Juntar os dois fors
         # TODO
         
-        num_0 = 0
-        num_1 = 0
-        for num in board.get_row(row):
-            if (num == 0):
-                num_0 += 1
-            elif (num == 1):
-                num_1 += 1
-        
-        if (num_0 > num_1 and self.check_num_occurences(board.side, num_0)):
+        num_0_row = 0
+        num_1_row = 0
+        num_0_col = 0
+        num_1_col = 0
+        for i in range(board.side):
+            if (board.get_number(row, i) == 0):
+                num_0_row += 1
+            elif (board.get_number(row, i) == 1):
+                num_1_row += 1
+            if (board.get_number(i, col) == 0):
+                num_0_col += 1
+            elif (board.get_number(i, col) == 1):
+                num_1_col += 1
+            
+        if (num_0_row > num_1_row and self.check_num_occurences(board.side, num_0_row)):
             return 1
-        elif (num_1 > num_0 and self.check_num_occurences(board.side, num_1)):
+        elif (num_1_row > num_0_row and self.check_num_occurences(board.side, num_1_row)):
             return 0
+        if (num_0_col > num_1_col and self.check_num_occurences(board.side, num_0_col)):
+            return 1
+        elif (num_1_col > num_0_col and self.check_num_occurences(board.side, num_1_col)):
+            return 0
+        
+        #num_0 = 0
+        #num_1 = 0
+        #for num in board.get_row(row):
+        #    if (num == 0):
+        #        num_0 += 1
+        #    elif (num == 1):
+        #        num_1 += 1
+        
+        #if (num_0 > num_1 and self.check_num_occurences(board.side, num_0)):
+        #    return 1
+        #elif (num_1 > num_0 and self.check_num_occurences(board.side, num_1)):
+        #    return 0
 
-        num_0 = 0
-        num_1 = 0
-        for row_n in range(board.side):
-            if (board.get_number(row_n, col) == 0):
-                num_0  += 1
-            elif (board.get_number(row, col) == 1):
-                num_1 += 1
+        #num_0 = 0
+        #num_1 = 0
+        #for row_n in range(board.side):
+        #    if (board.get_number(row_n, col) == 0):
+        #        num_0  += 1
+        #    elif (board.get_number(row, col) == 1):
+        #        num_1 += 1
                 
-        if (num_0 > num_1 and self.check_num_occurences(board.side, num_0)):
-            return 1
-        elif (num_1 > num_0 and self.check_num_occurences(board.side, num_1)):
-            return 0
+        #if (num_0 > num_1 and self.check_num_occurences(board.side, num_0)):
+        #    return 1
+        #elif (num_1 > num_0 and self.check_num_occurences(board.side, num_1)):
+        #    return 0
         
         return -1
         
@@ -523,7 +545,8 @@ class Takuzu(Problem):
         size = board.side
         
         for row_1 in range(board.side):
-            for row_2 in range(board.side):
+            #for row_2 in range(board.side):
+            for row_2 in range(row_1, board.side):
                 col_equalities = 0
                 row_equalities = 0
                 
