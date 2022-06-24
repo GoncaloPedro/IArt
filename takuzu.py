@@ -2,7 +2,7 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
+# Grupo 67:
 # 99229 Gonçalo Nunes
 # 99297 Pedro Cruz
 
@@ -171,7 +171,6 @@ class Board:
         return out
 
 
-
 class Takuzu(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
@@ -192,8 +191,19 @@ class Takuzu(Problem):
             for col in range(side):
                 if (state.board.is_empty_cell(row, col)):
                     option = self.pick_conditioned_by_adjacencies(row, col, state.board)
+                    
+                    if (option == -2):
+                        # Kill this branch
+                        actions = []
+                        action_picked = True
+                        break
                     if (option == -1):
                         option = self.pick_conditioned_by_number_of_occurences(row, col, state.board)
+                        if (option == -2):
+                            # Kill this branch
+                            actions = []
+                            action_picked = True
+                            break
 
                     if (option != -1):
                         actions = [(row, col, option)]
@@ -202,11 +212,12 @@ class Takuzu(Problem):
                     elif (option == -1):
                         actions = [(row, col, 0), (row, col, 1)]
 
+
             row = row + 1
-            
-        #state.board.change_cell(actions[0][0], actions[0][1], actions[0][2])
         
+
         return actions
+
 
     def result(self, state: TakuzuState, action):
         """Retorna o estado resultante de executar a 'action' sobre
@@ -217,7 +228,6 @@ class Takuzu(Problem):
         new_board = board.deep_copy()
         
         new_board.change_cell(action[0], action[1], action[2])
-        #new_board.free_cells -= 1
 
         return TakuzuState(new_board)
 
@@ -277,14 +287,13 @@ class Takuzu(Problem):
                     return False            
                     
             return self.check_equal_lines(board)
-        
+
         return False
-            
+
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
-        # TODO
-        pass
+        return node.state.board.free_cells
 
 
     @staticmethod
@@ -304,7 +313,11 @@ class Takuzu(Problem):
         horizontal_move = self.horizontal_adjacencies(row, col, horiz, board)
         vertical_move = self.vertical_adjacencies(row, col, vertical, board)
         
+        
         if (horizontal_move != -1):
+            if (vertical_move == Takuzu.get_complementary_value(horizontal_move)):
+                # Kill this branch
+                return -2
             return horizontal_move
         elif (vertical_move != -1):
             return vertical_move
@@ -342,42 +355,6 @@ class Takuzu(Problem):
         
         return -1
 
-
-    def adjacencies_edge_cell(self, row: int, col: int, vert_adj: list,
-                                  horiz_adj: list, board: Board):
-        if (None in vert_adj or row in (1, board.side - 2)):
-            move = self.edge_cell_vertical_adjacencies(row, col, vert_adj, board)
-            if (move != -1):
-                return move
-        if (None in horiz_adj or col in (1, board.side - 2)):
-            return self.edge_cell_horizontal_adjacencies(row, col, horiz_adj, board)
-
-
-    def edge_cell_vertical_adjacencies(self, row: int, col: int, vert_adj: list,
-                                       board: Board):
-        if (None == vert_adj[0] or row == 1):
-            if (vert_adj[1] == board.get_number(row + 2, col)):
-                return Takuzu.get_complementary_value(vert_adj[1])
-            
-        elif (None == vert_adj[1] or row == (board.side - 2)):
-            if (vert_adj[0] == board.get_number(row - 2, col)):
-                return Takuzu.get_complementary_value(vert_adj[0])
-        
-        return -1
-        
-        
-    def edge_cell_horizontal_adjacencies(self, row: int, col: int, horiz_adj: list,
-                                         board: Board):
-        if (None == horiz_adj[0] or col == 1):
-            if (horiz_adj[1] == board.get_number(row, col + 2)):
-                return Takuzu.get_complementary_value(horiz_adj[1])
-        
-        elif (None == horiz_adj[1] or col == (board.side - 2)):
-            if (horiz_adj[0] == board.get_number(row, col - 2)):
-                return Takuzu.get_complementary_value(horiz_adj[0])
-    
-        return -1
-
     
     def check_num_occurences(self, board_size: int, num_occurences: int):
         """Funcao que permite ver se o número de ocorrências de 0s ou 1s,
@@ -393,7 +370,7 @@ class Takuzu(Problem):
     
     
     def pick_conditioned_by_number_of_occurences(self, row: int, col: int, board: Board):
-        
+
         num_0_row = 0
         num_1_row = 0
         num_0_col = 0
@@ -409,52 +386,29 @@ class Takuzu(Problem):
                 num_0_col += 1
             elif (col_val == 1):
                 num_1_col += 1
-            
-        if (num_0_row > num_1_row and self.check_num_occurences(board.side, num_0_row)):
-            return 1
-        elif (num_1_row > num_0_row and self.check_num_occurences(board.side, num_1_row)):
-            return 0
-        if (num_0_col > num_1_col and self.check_num_occurences(board.side, num_0_col)):
-            return 1
-        elif (num_1_col > num_0_col and self.check_num_occurences(board.side, num_1_col)):
-            return 0
-        
-        
-        return -1
-        
-    
-    def check_row(self, size: int, row):
-        limit = 0
-        last_value = -1
-        for i in range(size):
-            if (row[i] == last_value):
-                limit += 1
-            else:
-                limit = 1
-                
-            if (limit == 3):
-                return False
-            last_value = row[i]
-    
-        return limit != 3
 
-    def check_column(self, board: Board, col: int, size: int):
-        limit = 0
-        last_value = -1
-        for i in range(size):
-            val = board.get_number(i, col)
-            if (val == last_value):
-                limit += 1
-            else:
-                limit = 1
-            
-            if (limit == 3):
-                return False
-            last_value = val
-    
-        return limit != 3
-            
-    
+        valid_row_0 = self.check_num_occurences(board.side, num_0_row)
+        valid_row_1 = self.check_num_occurences(board.side, num_1_row)
+        valid_col_0 = self.check_num_occurences(board.side, num_0_col)
+        valid_col_1 = self.check_num_occurences(board.side, num_1_col)
+
+        if (num_0_row > num_1_row and valid_row_0):
+            if (num_1_col > num_0_col and valid_col_1):
+                return -2
+            return 1
+        elif (num_1_row > num_0_row and valid_row_1):
+            if (num_0_col > num_1_col and valid_col_0):
+                return -2
+            return 0
+        if (num_0_col > num_1_col and valid_col_0):
+            return 1
+        elif (num_1_col > num_0_col and valid_col_1):
+            return 0
+
+
+        return -1
+
+
     def check_equal_lines(self, board: Board):
         size = board.side
         
@@ -463,8 +417,6 @@ class Takuzu(Problem):
                 col_equalities = 0
                 row_equalities = 0
                 
-                #if (row_1 == row_2):
-            #    continue
                 
                 for i in range(size):
                     if (board.get_number(row_1, i) == board.get_number(row_2, i)):
@@ -476,26 +428,15 @@ class Takuzu(Problem):
                         return False
         
         return True
-        
-        
-    
 
 
 if __name__ == "__main__":
     
-    
-
     board = Board.parse_instance_from_stdin()
-    #print("Initial:")
-    #print(board)
     problem = Takuzu(board)
-    
-    #print(problem.check_row(8, [1,1,0,0,0,1,1,0]))
-    #print(problem.check_column([[1],[1],[0],[0],[0],[1],[1],[0]],0, 8))
-    #exit(0)
-    
 
     solution_node = depth_first_tree_search(problem)
+    #solution_node = greedy_search(problem)
     if (solution_node != None):
         solution_state = solution_node.state
         final_board = solution_state.board
